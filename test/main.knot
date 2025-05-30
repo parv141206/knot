@@ -1,2 +1,7 @@
 plot y = sin(x)
-idev
+plot y = x ^ 2 + 3 * x - 5
+plot y = cos(x) + sin(x)
+plot y = (x + 2) * (x - 3)
+plot y = tan(x / 2) + 4
+plot y = 2 ^ (x + 1)
+plot y = x

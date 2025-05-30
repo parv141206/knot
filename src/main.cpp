@@ -4,6 +4,7 @@
 #include "../include/lexer.hpp"
 #include "../include/utils.hpp"
 #include "../include/constants.hpp"
+#include "../include/parser.hpp"
 
 int main(int argc, char **argv)
 {
@@ -25,9 +26,18 @@ int main(int argc, char **argv)
         tokens::Tokens tokens_ = tokenize(line);
         for (auto token : tokens_)
         {
-            std::cout << token << std::endl;
+            // std::cout << token << std::endl;
         }
-        std::cout << line << '\n';
+        parser::SyntaxValidator validator = parser::SyntaxValidator(tokens_);
+        if (validator.check_syntax())
+        {
+            std::cout << "Valid";
+        }
+        else
+        {
+            std::cout << "Invalid";
+        }
+        // std::cout << line << '\n';
     }
 
     std::cout << std::flush;

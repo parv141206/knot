@@ -3,6 +3,7 @@
 #include <string>
 #include "../include/lexer.hpp"
 #include "../include/utils.hpp"
+#include "lexer.hpp"
 
 tokens::Tokens tokenize(const std::string &line)
 {
@@ -103,4 +104,12 @@ std::vector<std::string> read_knot_file(const std::string &path)
 
     file.close();
     return lines;
+}
+
+std::ostream &tokens::operator<<(std::ostream &os, const tokens::Token &tok)
+{
+    os << "{ type: " << static_cast<int>(tok.type)
+       << ", lexeme: \"" << tok.lexeme
+       << "\", line: " << tok.line << " }";
+    return os;
 }

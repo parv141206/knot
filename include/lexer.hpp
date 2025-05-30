@@ -101,13 +101,7 @@ namespace tokens
         {'(', TokenType::LParen},
         {')', TokenType::RParen}};
 
-    std::ostream &operator<<(std::ostream &os, const Token &tok)
-    {
-        os << "{ type: " << static_cast<int>(tok.type)
-           << ", lexeme: \"" << tok.lexeme
-           << "\", line: " << tok.line << " }";
-        return os;
-    }
+    std::ostream &operator<<(std::ostream &os, const Token &tok);
 }
 // ----------------------------------------------------------------------------
 // Lexer Interface
