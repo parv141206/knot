@@ -1,0 +1,2 @@
+plot y = sin(x)
+idev
