@@ -31,13 +31,14 @@ int main(int argc, char **argv)
         parser::SyntaxValidator validator = parser::SyntaxValidator(tokens_);
         if (validator.check_syntax())
         {
-            std::cout << "Valid";
+            std::cout << std::endl
+                      << "Valid";
         }
         else
         {
-            std::cout << "Invalid";
+            std::cout << std::endl
+                      << "Invalid";
         }
-        // std::cout << line << '\n';
     }
 
     std::cout << std::flush;

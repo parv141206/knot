@@ -43,6 +43,13 @@ tokens::Tokens tokenize(const std::string &line)
             // Will be treated like an identifier
             else
             {
+                // FOR FUCK SAKE, if the identifier is of more than one character, its a wrong function in disguise
+                if (word.length() > 1)
+                {
+                    print_error("A rather expected token found. Mostly its a wrong function in disguise. Check the code asshole");
+                    std::runtime_error("Skill issue");
+                    exit(0);
+                }
                 tokens_.emplace_back(tokens::TokenType::Ident, word, line_no);
             }
 

@@ -1,5 +1,3 @@
-// It was a pain to document this in detail.
-// Heavy documentation has to be maintained for this file.
 #pragma once
 
 #include <iostream>
@@ -16,27 +14,28 @@ namespace tokens
     enum class TokenType
     {
         // Keywords
-        Plot,   ///< Represents the `plot` keyword
-        LParen, ///< Left parenthesis: `(`
-        RParen, ///< Right parenthesis: `)`
+        Plot,
+        LParen,
+        RParen,
 
         // Math Operations
-        Assign,   ///< Assignment operator: `=`
-        Plus,     ///< Addition operator: `+`
-        Minus,    ///< Subtraction operator: `-`
-        Multiply, ///< Multiplication operator: `*`
-        Divide,   ///< Division operator: `/`
-        Power,    ///< Exponentiation operator: `^`
-        Colon,    ///< Colon symbol: `:`
+        Assign,
+        Plus,
+        Minus,
+        Multiply,
+        Divide,
+        Power,
+        Colon,
+        Comma,
 
         // Identifiers
         Ident,
 
         // Literals
-        Number, ///< Numeric literal (integer or float)
+        Number,
 
         // Functions
-        Function ///< Mathematical function (e.g., sin, cos)
+        Function
     };
 
     /**
@@ -44,52 +43,39 @@ namespace tokens
      */
     struct Token
     {
-        TokenType type;     ///< Type of the token
-        std::string lexeme; ///< Actual string from input
-        int line;           ///< Line number where the token was found
-
+        TokenType type;
+        std::string lexeme;
+        int line;
+        Token() {}
         Token(TokenType t, std::string lex, int ln)
             : type(t), lexeme(std::move(lex)), line(ln) {}
     };
 
-    /**
-     * @brief Alias for a list of tokens.
-     */
     using Tokens = std::vector<Token>;
 
     // ----------------------------------------------------------------------------
     // Static Token Maps for Tokenization
     // ----------------------------------------------------------------------------
 
-    /**
-     * @brief Maps reserved keywords to their corresponding TokenType.
-     *
-     * Includes:
-     * - `plot`
-     */
     static const std::unordered_map<std::string, TokenType> keyword_map = {
         {"plot", TokenType::Plot}};
 
-    /**
-     * @brief Maps supported mathematical functions to the Function token type.
-     *
-     * Includes:
-     * - sin, cos, tan, cosec, sec, cot
-     */
     static const std::unordered_map<std::string, TokenType> function_map = {
         {"sin", TokenType::Function},
         {"cos", TokenType::Function},
         {"tan", TokenType::Function},
         {"cosec", TokenType::Function},
         {"sec", TokenType::Function},
-        {"cot", TokenType::Function}};
+        {"cot", TokenType::Function},
+        {"sqrt", TokenType::Function},
+        {"log", TokenType::Function},
+        {"ln", TokenType::Function},
+        {"pow", TokenType::Function},
+        {"abs", TokenType::Function},
+        {"exp", TokenType::Function},
+        {"floor", TokenType::Function},
+        {"ceil", TokenType::Function}};
 
-    /**
-     * @brief Maps single-character symbols to their corresponding TokenType.
-     *
-     * Includes:
-     * - `=`, `+`, `-`, `*`, `/`, `^`, `:`, `(`, `)`
-     */
     static const std::unordered_map<char, TokenType> symbol_map = {
         {'=', TokenType::Assign},
         {'+', TokenType::Plus},
@@ -99,26 +85,68 @@ namespace tokens
         {'^', TokenType::Power},
         {':', TokenType::Colon},
         {'(', TokenType::LParen},
-        {')', TokenType::RParen}};
+        {')', TokenType::RParen},
+        {',', TokenType::Comma}};
+
+    // ----------------------------------------------------------------------------
+    // Precedence Weights (Higher = Binds Tighter)
+    // ----------------------------------------------------------------------------
+
+    static const std::unordered_map<TokenType, int> weights = {
+        {TokenType::Assign, 1},
+        {TokenType::Plus, 2},
+        {TokenType::Minus, 2},
+        {TokenType::Multiply, 3},
+        {TokenType::Divide, 3},
+        {TokenType::Power, 4},
+        {TokenType::Function, 5} // highest precedence
+        // No need for LParen, RParen here, handled contextually
+    };
+
+    // Optional: Left/Right associativity
+    enum class Associativity
+    {
+        Left,
+        Right
+    };
+
+    static const std::unordered_map<TokenType, Associativity> associativity_map = {
+        {TokenType::Assign, Associativity::Right},
+        {TokenType::Plus, Associativity::Left},
+        {TokenType::Minus, Associativity::Left},
+        {TokenType::Multiply, Associativity::Left},
+        {TokenType::Divide, Associativity::Left},
+        {TokenType::Power, Associativity::Right}
+        // Function is prefix — handled separately
+    };
+
+    // ----------------------------------------------------------------------------
+    // Function Arity (Arguments Expected)
+    // ----------------------------------------------------------------------------
+
+    const std::unordered_map<std::string, int> valid_functions = {
+        {"sin", 1},
+        {"cos", 1},
+        {"tan", 1},
+        {"cosec", 1},
+        {"sec", 1},
+        {"cot", 1},
+        {"sqrt", 1},
+        {"log", 2}, // base, number
+        {"ln", 1},
+        {"pow", 2}, // base, exponent
+        {"abs", 1},
+        {"exp", 1},
+        {"floor", 1},
+        {"ceil", 1}};
 
     std::ostream &operator<<(std::ostream &os, const Token &tok);
-}
+
+} // namespace tokens
+
 // ----------------------------------------------------------------------------
 // Lexer Interface
 // ----------------------------------------------------------------------------
 
-/**
- * @brief Tokenizes a single line of Knot source code.
- *
- * @param line The line to tokenize.
- * @return A vector of tokens found in the line.
- */
 tokens::Tokens tokenize(const std::string &line);
-
-/**
- * @brief Reads all lines from a .knot file.
- *
- * @param path The relative or absolute path to the file.
- * @return A list of strings, each representing a line from the file.
- */
 std::vector<std::string> read_knot_file(const std::string &path);

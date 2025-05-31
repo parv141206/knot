@@ -30,10 +30,12 @@ namespace parser
         const tokens::Token &advance();        // Move to next token
         const tokens::Token &previous() const; // Last consumed token
         bool is_at_end() const;                // Reached end of token stream
+        bool is_operator(tokens::TokenType t);
 
+        bool match(tokens::TokenType expected);
         // Rule validation functions
-        bool validate_statement();  // Checks a full 'plot' statement
-        bool validate_expression(); // Checks right-hand side of assignment
+        bool validate_statement();                                                // Checks a full 'plot' statement
+        bool validate_expression(int brackets_count = 0, int function_args = -1); // Checks right-hand side of assignment
     };
 
-} // namespace parser
+}

@@ -1,12 +1,19 @@
-// Big problem with functions. Currently it doesnt work well for functions and right paren. i think i should do something with the recursive calling to validate it , since when calling recursively it goes till end , when using normal ( we didnt increase the count and wt coming end it simply finds "extra" ). Abhi sona jaruri hai
-
+/**
+ * Hours long of work.
+ * TODO: I havent added any line number logic till now, will add it later.
+ */
 #include "../include/parser.hpp"
+#include "../include/utils.hpp"
+#include <iostream>
+#include <cctype>
+#include <stdexcept>
 
 using namespace tokens;
 using namespace parser;
 
 const Token &SyntaxValidator::peek() const
 {
+
     return tokens[current];
 }
 
@@ -19,13 +26,11 @@ const Token &SyntaxValidator::advance()
 
 const Token &SyntaxValidator::previous() const
 {
+
     return tokens[current - 1];
 }
 
-bool SyntaxValidator::is_at_end() const
-{
-    return current >= tokens.size();
-}
+bool SyntaxValidator::is_at_end() const { return current >= tokens.size(); }
 
 bool SyntaxValidator::check_syntax()
 {
@@ -33,111 +38,122 @@ bool SyntaxValidator::check_syntax()
     {
         return validate_statement();
     }
-    catch (const std::runtime_error &e)
+    catch (const std::runtime_error &)
     {
-        std::cerr << "Syntax error: " << e.what() << "\n";
+        return false;
+    }
+    catch (const std::out_of_range &e)
+    {
+        // Catching potential out_of_range from peek() or advance() in unexpected scenarios
+        print_error("Internal error: Reached end of tokens unexpectedly. Damn what code did you give!?");
         return false;
     }
 }
 
 bool SyntaxValidator::validate_statement()
 {
-    // Must begin with 'plot'
-    if (peek().type != TokenType::Plot)
-        throw std::runtime_error("Expected 'plot' at beginning of statement.");
-    advance();
-
-    // Expect identifier
-    if (peek().type != TokenType::Function && peek().type != TokenType::Number)
+    if (is_at_end() || peek().type != TokenType::Plot)
     {
-        if (peek().type != TokenType::Function && !std::isalpha(peek().lexeme[0]))
-            throw std::runtime_error("Expected identifier after 'plot'.");
+        print_error("Expected 'plot' to start the statement. No 'plot', no plotting!");
+        throw std::runtime_error("Expected 'plot'");
     }
     advance();
 
-    // Expect '='
-    if (peek().type != TokenType::Assign)
-        throw std::runtime_error("Expected '=' after identifier.");
+    if (is_at_end() || peek().type != TokenType::Ident)
+    {
+        print_error("Expected variable name (e.g., 'y') after 'plot'.");
+        throw std::runtime_error("Expected identifier");
+    }
     advance();
 
-    // Expect valid right-hand side expression
-    if (!validate_expression())
-        throw std::runtime_error("Invalid expression on right-hand side.");
+    if (is_at_end() || peek().type != TokenType::Assign)
+    {
+        print_error("Expected '=' after identifier.");
+        throw std::runtime_error("Expected '='");
+    }
+    advance();
 
-    // All tokens should be consumed
+    validate_expression(0);
+
     if (!is_at_end())
     {
-
-        std::cout << std::endl
-                  << peek() << std::endl;
-        throw std::runtime_error("Unexpected token after valid statement.");
+        std::cout << "\nUnexpected token: " << peek() << std::endl;
+        print_error("Extra tokens after valid statement.");
+        throw std::runtime_error("Extra tokens");
     }
 
     return true;
 }
 
-bool SyntaxValidator::validate_expression()
+bool SyntaxValidator::validate_expression(int brackets_count, int function_args = 0)
 {
-    int paren_balance = 0;
-
     while (!is_at_end())
     {
-        TokenType type = peek().type;
-
-        switch (type)
+        Token current_token = peek();
+        if (current_token.type == TokenType::Number || current_token.type == TokenType::LParen || current_token.type == TokenType::Function || current_token.type == TokenType::Ident)
         {
-        case TokenType::Function:
-            advance();
-
-            if (peek().type != TokenType::LParen)
-                throw std::runtime_error("Expected '(' after function name.");
-            advance();
-
-            if (!validate_expression())
-                throw std::runtime_error("Invalid expression inside function call.");
-
-            if (peek().type != TokenType::RParen)
-                throw std::runtime_error("Expected ')' after function arguments.");
-            advance();
-            break;
-
-        case TokenType::Number:
-        case TokenType::Ident:
-            advance();
-            break;
-
-        case TokenType::LParen:
-            paren_balance++;
-            std::cout << std::endl
-                      << "Increasing paren bal" << std::endl;
-            advance();
-            break;
-
-        case TokenType::RParen:
-            paren_balance--;
-
-            std::cout << std::endl
-                      << "decreasing paren bal" << std::endl;
-            if (paren_balance < 0)
-                throw std::runtime_error("Unmatched ')'");
-            advance();
-            break;
-
-        case TokenType::Plus:
-        case TokenType::Minus:
-        case TokenType::Multiply:
-        case TokenType::Divide:
-        case TokenType::Power:
-            advance();
-            break;
-
-        default:
-            return true;
+            if (current_token.type == TokenType::Number || current_token.type == TokenType::Ident)
+            {
+                advance();
+                if (symbol_map.find(peek().lexeme[0]) != symbol_map.end())
+                {
+                    advance();
+                    validate_expression(brackets_count);
+                }
+                else
+                {
+                    print_error("Expected operator after an identifier or a number!");
+                    std::runtime_error("Invalid Expression");
+                }
+            }
+            else if (current_token.type == TokenType::LParen)
+            {
+                advance();
+                validate_expression(brackets_count + 1);
+            }
+            else if (current_token.type == TokenType::RParen)
+            {
+                if (brackets_count - 1 >= 0)
+                {
+                    advance();
+                    validate_expression(brackets_count - 1);
+                }
+                else
+                {
+                    print_error("Mismatch in brackets!");
+                    std::runtime_error("Invalid Expression");
+                }
+            }
+            else if (current_token.type == TokenType::Function)
+            {
+                if (function_map.find(current_token.lexeme) != function_map.end())
+                {
+                    advance();
+                    validate_expression(brackets_count, valid_functions.at(current_token.lexeme) - 1);
+                }
+            }
+            else if (current_token.type == TokenType::Comma)
+            {
+                if (function_args < 0)
+                {
+                    print_error("Wrong use of functions! Check the syntax again!");
+                    std::runtime_error("Invalid Expression");
+                }
+                advance();
+                validate_expression(brackets_count, function_args - 1);
+            }
+            else
+            {
+                print_error("Wrong use of functions! Check the syntax again!");
+                std::runtime_error("Invalid Expression");
+            }
+        }
+        else
+        {
+            print_error("Start of expression is invalid");
+            std::runtime_error("Invalid Expression");
+            exit(0);
         }
     }
-
-    if (paren_balance != 0)
-        throw std::runtime_error("Unbalanced parentheses in expression.");
-
     return true;
 }
