@@ -21,24 +21,19 @@ int main(int argc, char **argv)
 
     std::vector<std::string> lines = read_knot_file(file_path);
 
-    for (const auto &line : lines)
+    for (size_t i = 0; i < lines.size(); ++i)
     {
-        tokens::Tokens tokens_ = tokenize(line);
+        const auto &line = lines[i];
+        int line_no = static_cast<int>(i + 1);
+
+        tokens::Tokens tokens_ = tokenize(line, line_no);
+
         for (auto token : tokens_)
         {
             // std::cout << token << std::endl;
         }
-        parser::SyntaxValidator validator = parser::SyntaxValidator(tokens_);
-        if (validator.check_syntax())
-        {
-            std::cout << std::endl
-                      << "Valid";
-        }
-        else
-        {
-            std::cout << std::endl
-                      << "Invalid";
-        }
+
+        Parser parser(tokens_);
     }
 
     std::cout << std::flush;

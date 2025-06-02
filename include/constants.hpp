@@ -7,7 +7,7 @@ namespace codes
     constexpr const char *reset = "\033[0m";
     constexpr const char *new_line = "\n";
 
-    constexpr const char *arrow = "➤";
+    constexpr const char *arrow = " ➤  ";
     constexpr const char *bold = "\033[1m";
     constexpr const char *underline = "\033[4m";
 

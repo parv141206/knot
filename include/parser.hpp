@@ -1,41 +1,85 @@
-#pragma once
-
-#include "lexer.hpp"
+#include "../include/lexer.hpp"
+#include <vector>
+#include <stdexcept>
 #include <iostream>
 
-namespace parser
+class Parser
 {
+public:
+    Parser(const tokens::Tokens &token_list);
 
     /**
-     * @brief SyntaxValidator class checks the token stream for valid syntax according to the rules of the language.
-     * This does NOT build an AST yet.
+     * @brief Parses the token list to check for syntax correctness.
+     * @return True if the syntax is valid, false otherwise.
      */
-    class SyntaxValidator
-    {
-        const tokens::Tokens &tokens;
-        size_t current = 0;
+    bool parse();
 
-    public:
-        SyntaxValidator(const tokens::Tokens &toks) : tokens(toks) {}
+private:
+    const tokens::Tokens &tokens;
+    size_t current_token_index;
 
-        /**
-         * @brief Entry point to validate the token stream.
-         * @return true if the syntax is valid, false otherwise.
-         */
-        bool check_syntax();
+    /**
+     * @brief Peeks at the current token without consuming it.
+     * @return The current token.
+     * @throws std::runtime_error if at the end of input.
+     */
+    const tokens::Token &peek() const;
 
-    private:
-        // Helper functions
-        const tokens::Token &peek() const;     // Look at current token
-        const tokens::Token &advance();        // Move to next token
-        const tokens::Token &previous() const; // Last consumed token
-        bool is_at_end() const;                // Reached end of token stream
-        bool is_operator(tokens::TokenType t);
+    /**
+     * @brief Consumes the current token and advances the index.
+     * @return The consumed token.
+     * @throws std::runtime_error if attempting to consume past the end of input.
+     */
+    const tokens::Token &consume();
 
-        bool match(tokens::TokenType expected);
-        // Rule validation functions
-        bool validate_statement();                                                // Checks a full 'plot' statement
-        bool validate_expression(int brackets_count = 0, int function_args = -1); // Checks right-hand side of assignment
-    };
+    /**
+     * @brief Checks if the current token matches the expected type and optional lexeme.
+     *        If it matches, it consumes the token. Otherwise, throws an error.
+     * @param type The expected token type.
+     * @param expected_lexeme The expected lexeme (optional).
+     * @throws std::runtime_error if the token does not match expectations.
+     */
+    void expect(tokens::TokenType type, const std::string &expected_lexeme = "");
 
-}
+    /**
+     * @brief Parses the top-level program rule.
+     */
+    void parse_program();
+
+    /**
+     * @brief Parses a plot statement (e.g., plot y = ...).
+     */
+    void parse_plot_statement();
+
+    /**
+     * @brief Parses an expression (addition and subtraction).
+     */
+    void parse_expression();
+
+    /**
+     * @brief Parses a term (multiplication and division).
+     */
+    void parse_term();
+
+    /**
+     * @brief Parses a factor (exponentiation).
+     */
+    void parse_factor();
+
+    /**
+     * @brief Parses a primary expression (number, identifier, function call, parenthesized expression).
+     */
+    void parse_primary();
+
+    /**
+     * @brief Parses a list of expressions for function arguments.
+     */
+    void parse_expression_list(const std::string &function_name, int expected_arity);
+
+    /**
+     * @brief Checks if the current token type is one of the specified types.
+     * @param types A vector of token types to check against.
+     * @return True if the current token type is in the list, false otherwise.
+     */
+    bool match(const std::vector<tokens::TokenType> &types);
+};

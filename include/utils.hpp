@@ -1,5 +1,24 @@
 #pragma once
 #include <iostream>
+#include <lexer.hpp>
 
+/**
+ * @brief Prints an error, thats it!
+ *
+ * @param error
+ */
 void print_error(std::string error);
+
+/**
+ * @brief Prints info or any kind of notice!
+ *
+ * @param info
+ */
 void print_info(std::string info);
+/**
+ * @brief It uses the magic_enum, which i just downloaded from github, to convert a type to string. This is so that i can show proper error. No credits taken what so ever.
+ *
+ * @param type
+ * @return std::string
+ */
+std::string token_type_to_string(tokens::TokenType type);

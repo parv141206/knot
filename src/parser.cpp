@@ -1,159 +1,226 @@
 /**
- * Hours long of work.
- * TODO: I havent added any line number logic till now, will add it later.
+ *
+ * THIS FILE TOOK BLOOD, SWEAT, and TEARS TO MAKE
+ *
+ * This file only CHECKS if the given tokens are even valid or not.
+ * It DOES NOT create an AST
+ *
+ * This uses a Recursive Descent Parser technique, GOATED!
+ *
+ * For this, i have made following grammer, kind of a standard one:
+ *
+
+--- Grammer ---
+program -> plot_statement
+
+plot_statement -> Plot Ident Assign expression
+
+expression -> term { (Plus | Minus) term }*
+
+term -> factor { (Multiply | Divide) factor }*
+
+factor -> primary { Power primary }*
+
+primary -> Number | Ident | Function LParen expression_list RParen | LParen expression RParen
+
+expression_list -> expression { Comma expression }* | // Empty if needed
+
+ *
  */
 #include "../include/parser.hpp"
 #include "../include/utils.hpp"
-#include <iostream>
-#include <cctype>
-#include <stdexcept>
+#include "../include/external/magic_enum.hpp"
 
-using namespace tokens;
-using namespace parser;
+Parser::Parser(const tokens::Tokens &token_list) : tokens(token_list), current_token_index(0) {}
 
-const Token &SyntaxValidator::peek() const
-{
-
-    return tokens[current];
-}
-
-const Token &SyntaxValidator::advance()
-{
-    if (!is_at_end())
-        current++;
-    return previous();
-}
-
-const Token &SyntaxValidator::previous() const
-{
-
-    return tokens[current - 1];
-}
-
-bool SyntaxValidator::is_at_end() const { return current >= tokens.size(); }
-
-bool SyntaxValidator::check_syntax()
+bool Parser::parse()
 {
     try
     {
-        return validate_statement();
+        parse_program();
+        return current_token_index == tokens.size();
     }
-    catch (const std::runtime_error &)
+    catch (const std::runtime_error &e)
     {
-        return false;
-    }
-    catch (const std::out_of_range &e)
-    {
-        // Catching potential out_of_range from peek() or advance() in unexpected scenarios
-        print_error("Internal error: Reached end of tokens unexpectedly. Damn what code did you give!?");
+        std::cerr << "\n"
+                  << "Parsing error: " << e.what() << std::endl;
         return false;
     }
 }
 
-bool SyntaxValidator::validate_statement()
+const tokens::Token &Parser::peek() const
 {
-    if (is_at_end() || peek().type != TokenType::Plot)
+    if (current_token_index >= tokens.size())
     {
-        print_error("Expected 'plot' to start the statement. No 'plot', no plotting!");
-        throw std::runtime_error("Expected 'plot'");
+        int line = tokens.empty() ? 0 : tokens.back().line;
+        std::string msg = "Unexpected end of input at or near line " + std::to_string(line);
+        print_error(msg);
+        throw std::runtime_error(msg);
     }
-    advance();
-
-    if (is_at_end() || peek().type != TokenType::Ident)
-    {
-        print_error("Expected variable name (e.g., 'y') after 'plot'.");
-        throw std::runtime_error("Expected identifier");
-    }
-    advance();
-
-    if (is_at_end() || peek().type != TokenType::Assign)
-    {
-        print_error("Expected '=' after identifier.");
-        throw std::runtime_error("Expected '='");
-    }
-    advance();
-
-    validate_expression(0);
-
-    if (!is_at_end())
-    {
-        std::cout << "\nUnexpected token: " << peek() << std::endl;
-        print_error("Extra tokens after valid statement.");
-        throw std::runtime_error("Extra tokens");
-    }
-
-    return true;
+    return tokens[current_token_index];
 }
 
-bool SyntaxValidator::validate_expression(int brackets_count, int function_args = 0)
+const tokens::Token &Parser::consume()
 {
-    while (!is_at_end())
+    if (current_token_index >= tokens.size())
     {
-        Token current_token = peek();
-        if (current_token.type == TokenType::Number || current_token.type == TokenType::LParen || current_token.type == TokenType::Function || current_token.type == TokenType::Ident)
+        int line = tokens.empty() ? 0 : tokens.back().line;
+        std::string msg = "Attempted to consume past end of input at or near line " + std::to_string(line);
+        print_error(msg);
+        throw std::runtime_error(msg);
+    }
+    return tokens[current_token_index++];
+}
+
+void Parser::expect(tokens::TokenType type, const std::string &expected_lexeme)
+{
+    const auto &token = peek();
+    if (token.type != type || (!expected_lexeme.empty() && token.lexeme != expected_lexeme))
+    {
+        std::string msg = "Expected token type " + token_type_to_string(type) +
+                          (expected_lexeme.empty() ? "" : " ('" + expected_lexeme + "')") +
+                          " but got type " + token_type_to_string(token.type) +
+                          " ('" + token.lexeme + "')" +
+                          " at line " + std::to_string(token.line);
+        print_error(msg);
+        throw std::runtime_error(msg);
+    }
+    consume();
+}
+
+bool Parser::match(const std::vector<tokens::TokenType> &types)
+{
+    if (current_token_index >= tokens.size())
+    {
+        return false;
+    }
+    const auto &token = peek();
+    for (tokens::TokenType type : types)
+    {
+        if (token.type == type)
         {
-            if (current_token.type == TokenType::Number || current_token.type == TokenType::Ident)
-            {
-                advance();
-                if (symbol_map.find(peek().lexeme[0]) != symbol_map.end())
-                {
-                    advance();
-                    validate_expression(brackets_count);
-                }
-                else
-                {
-                    print_error("Expected operator after an identifier or a number!");
-                    std::runtime_error("Invalid Expression");
-                }
-            }
-            else if (current_token.type == TokenType::LParen)
-            {
-                advance();
-                validate_expression(brackets_count + 1);
-            }
-            else if (current_token.type == TokenType::RParen)
-            {
-                if (brackets_count - 1 >= 0)
-                {
-                    advance();
-                    validate_expression(brackets_count - 1);
-                }
-                else
-                {
-                    print_error("Mismatch in brackets!");
-                    std::runtime_error("Invalid Expression");
-                }
-            }
-            else if (current_token.type == TokenType::Function)
-            {
-                if (function_map.find(current_token.lexeme) != function_map.end())
-                {
-                    advance();
-                    validate_expression(brackets_count, valid_functions.at(current_token.lexeme) - 1);
-                }
-            }
-            else if (current_token.type == TokenType::Comma)
-            {
-                if (function_args < 0)
-                {
-                    print_error("Wrong use of functions! Check the syntax again!");
-                    std::runtime_error("Invalid Expression");
-                }
-                advance();
-                validate_expression(brackets_count, function_args - 1);
-            }
-            else
-            {
-                print_error("Wrong use of functions! Check the syntax again!");
-                std::runtime_error("Invalid Expression");
-            }
+            return true;
+        }
+    }
+    return false;
+}
+
+void Parser::parse_program()
+{
+    parse_plot_statement();
+    if (current_token_index < tokens.size())
+    {
+        std::string msg = "Unexpected tokens after plot statement starting at line " + std::to_string(peek().line);
+        print_error(msg);
+        throw std::runtime_error(msg);
+    }
+}
+
+void Parser::parse_plot_statement()
+{
+    expect(tokens::TokenType::Plot);
+    expect(tokens::TokenType::Ident);
+    expect(tokens::TokenType::Assign);
+    parse_expression();
+}
+
+void Parser::parse_expression()
+{
+    parse_term();
+    while (match({tokens::TokenType::Plus, tokens::TokenType::Minus}))
+    {
+        consume();
+        parse_term();
+    }
+}
+
+void Parser::parse_term()
+{
+    parse_factor();
+    while (match({tokens::TokenType::Multiply, tokens::TokenType::Divide}))
+    {
+        consume();
+        parse_factor();
+    }
+}
+
+void Parser::parse_factor()
+{
+    parse_primary();
+    while (match({tokens::TokenType::Power}))
+    {
+        consume();
+        parse_primary();
+    }
+}
+
+void Parser::parse_primary()
+{
+    const auto &token = peek();
+    if (match({tokens::TokenType::Number, tokens::TokenType::Ident}))
+    {
+        consume();
+    }
+    else if (match({tokens::TokenType::Function}))
+    {
+        std::string function_name = token.lexeme;
+        consume();
+        expect(tokens::TokenType::LParen);
+
+        int expected_arity = 0;
+        if (tokens::valid_functions.count(function_name))
+        {
+            expected_arity = tokens::valid_functions.at(function_name);
         }
         else
         {
-            print_error("Start of expression is invalid");
-            std::runtime_error("Invalid Expression");
-            exit(0);
+            std::string msg = "Unknown function '" + function_name + "' at line " + std::to_string(token.line);
+            print_error(msg);
+            throw std::runtime_error(msg);
+        }
+
+        parse_expression_list(function_name, expected_arity);
+        expect(tokens::TokenType::RParen);
+    }
+    else if (match({tokens::TokenType::LParen}))
+    {
+        consume();
+        parse_expression();
+        expect(tokens::TokenType::RParen);
+    }
+    else
+    {
+        std::string msg = "Unexpected token in primary expression: type " + std::to_string(static_cast<int>(token.type)) +
+                          " ('" + token.lexeme + "')" +
+                          " at line " + std::to_string(token.line);
+        print_error(msg);
+        throw std::runtime_error(msg);
+    }
+}
+
+void Parser::parse_expression_list(const std::string &function_name, int expected_arity)
+{
+    int argument_count = 0;
+
+    if (!match({tokens::TokenType::RParen}))
+    {
+        parse_expression();
+        argument_count++;
+        while (match({tokens::TokenType::Comma}))
+        {
+            consume();
+            parse_expression();
+            argument_count++;
         }
     }
-    return true;
+
+    if (argument_count != expected_arity)
+    {
+        std::string msg = "Function '" + function_name + "' expects " +
+                          std::to_string(expected_arity) + " arguments, but got " +
+                          std::to_string(argument_count) + " at line " +
+                          (tokens.empty() ? "unknown" : std::to_string(tokens[current_token_index > 0 ? current_token_index - 1 : 0].line));
+        print_error(msg);
+        throw std::runtime_error(msg);
+    }
 }

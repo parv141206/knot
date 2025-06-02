@@ -89,38 +89,6 @@ namespace tokens
         {',', TokenType::Comma}};
 
     // ----------------------------------------------------------------------------
-    // Precedence Weights (Higher = Binds Tighter)
-    // ----------------------------------------------------------------------------
-
-    static const std::unordered_map<TokenType, int> weights = {
-        {TokenType::Assign, 1},
-        {TokenType::Plus, 2},
-        {TokenType::Minus, 2},
-        {TokenType::Multiply, 3},
-        {TokenType::Divide, 3},
-        {TokenType::Power, 4},
-        {TokenType::Function, 5} // highest precedence
-        // No need for LParen, RParen here, handled contextually
-    };
-
-    // Optional: Left/Right associativity
-    enum class Associativity
-    {
-        Left,
-        Right
-    };
-
-    static const std::unordered_map<TokenType, Associativity> associativity_map = {
-        {TokenType::Assign, Associativity::Right},
-        {TokenType::Plus, Associativity::Left},
-        {TokenType::Minus, Associativity::Left},
-        {TokenType::Multiply, Associativity::Left},
-        {TokenType::Divide, Associativity::Left},
-        {TokenType::Power, Associativity::Right}
-        // Function is prefix — handled separately
-    };
-
-    // ----------------------------------------------------------------------------
     // Function Arity (Arguments Expected)
     // ----------------------------------------------------------------------------
 
@@ -148,5 +116,5 @@ namespace tokens
 // Lexer Interface
 // ----------------------------------------------------------------------------
 
-tokens::Tokens tokenize(const std::string &line);
+tokens::Tokens tokenize(const std::string &line, int line_no);
 std::vector<std::string> read_knot_file(const std::string &path);

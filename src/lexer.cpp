@@ -5,11 +5,10 @@
 #include "../include/utils.hpp"
 #include "lexer.hpp"
 
-tokens::Tokens tokenize(const std::string &line)
+tokens::Tokens tokenize(const std::string &line, int line_no)
 {
     tokens::Tokens tokens_;
     size_t i = 0;
-    int line_no = 1; // For now :/
 
     while (i < line.size())
     {
