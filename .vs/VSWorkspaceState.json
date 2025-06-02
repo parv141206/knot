@@ -2,8 +2,9 @@
   "ExpandedNodes": [
     "",
     "\\include",
-    "\\src"
+    "\\src",
+    "\\test"
   ],
-  "SelectedNode": "\\include\\lexer.hpp",
+  "SelectedNode": "\\src\\parser.cpp",
   "PreviewInSolutionExplorer": false
 }

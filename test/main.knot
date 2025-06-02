@@ -1,7 +1,1 @@
-plot y = sin a + b) 
-plot y = sin a + b) 
-plot y = sin (a + b) 
-plot y = sin (a + b 
-plot y = sin a + ) 
-plot y = sin (a  b) 
-plot y = sin  + b) 
+plot y = (a + b) * c

@@ -3,7 +3,6 @@
 #include "../include/constants.hpp"
 #include "../include/external/magic_enum.hpp"
 #include "../include/lexer.hpp"
-#include "utils.hpp"
 
 void print_error(std::string error)
 {
