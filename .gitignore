@@ -1,2 +1,21 @@
 .vs/
 .vs/knot/
+# CMake/Ninja/Make build dirs
+build/
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+
+# Compiled output
+*.o
+*.obj
+*.exe
+*.out
+*.a
+*.so
+*.dll
+
+# IDE stuff
+.vscode/
+.idea/

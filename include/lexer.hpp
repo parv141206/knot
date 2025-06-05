@@ -110,7 +110,7 @@ namespace tokens
 
     std::ostream &operator<<(std::ostream &os, const Token &tok);
 
-} // namespace tokens
+} 
 
 // ----------------------------------------------------------------------------
 // Lexer Interface

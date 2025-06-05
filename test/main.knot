@@ -1,1 +1,1 @@
-plot y = (a + b) * c
+plot y = tan(x)

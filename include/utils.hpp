@@ -2,6 +2,7 @@
 #include <iostream>
 #include <lexer.hpp>
 
+
 /**
  * @brief Prints an error, thats it!
  *
@@ -22,3 +23,10 @@ void print_info(std::string info);
  * @return std::string
  */
 std::string token_type_to_string(tokens::TokenType type);
+/**
+ * @brief Simply converts string to double, name says it all
+ *
+ * @param str
+ * @return double
+ */
+double string_to_double(const std::string& str);
