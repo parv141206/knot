@@ -1,1 +1,1 @@
-plot y = tan(x)
+plot y = x ^ 2

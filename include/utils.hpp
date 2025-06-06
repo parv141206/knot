@@ -30,3 +30,11 @@ std::string token_type_to_string(tokens::TokenType type);
  * @return double
  */
 double string_to_double(const std::string& str);
+/**
+ * @brief Simply exits in case of error
+ */
+void exit_with_error();
+/**
+ * @brief Prints title
+ */
+void print_branding();

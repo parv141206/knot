@@ -1,0 +1,5 @@
+plot y = x ^ 2
+plot y = x ^ 3
+plot y = x ^ 3 - 5 * x
+plot y = sin(x) * x
+plot y = (x ^ 2) * sin(x)

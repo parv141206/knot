@@ -12,7 +12,7 @@ using namespace tokens;
 map<double, double> evaluate(tokens::Tokens tokens_ , double step , double end ) {
 	map<double, double> values;
 
-	for (int i = 0; i <= (int)(end / step); ++i) {
+	for (int i = -(int)(end / step); i <= (int)(end / step); ++i) {
 		double x = i * step;
 
 		stack<double> operands;

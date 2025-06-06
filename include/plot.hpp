@@ -7,4 +7,4 @@
  * @param values , "x" mapped to "y" map
  * @param title_ , kya lagta kya hoga :/
  */
-void plot_values(const std::map<double, double>& values , std::string title_);
+void plot_values(const std::vector<std::pair<std::map<double, double>, std::string>>& plots);

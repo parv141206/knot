@@ -1,17 +1,18 @@
 {
-  "ExpandedNodes": [
-    "",
-    "\\include",
-    "\\include\\external",
-    "\\src",
-    "\\test"
-  ],
-  "SelectedNode": "\\include\\external\\pbPlots.cpp",
-  "PreviewInSolutionExplorer": false,
   "OutputFoldersPerTargetSystem": {
     "Local Machine": [
       "out\\build\\x64-Debug",
       "out\\install\\x64-Debug"
     ]
-  }
+  },
+  "ExpandedNodes": [
+    "",
+    "\\include",
+    "\\include\\external",
+    "\\include\\external\\matplotplusplus",
+    "\\src",
+    "\\test"
+  ],
+  "SelectedNode": "\\CMakeLists.txt",
+  "PreviewInSolutionExplorer": false
 }

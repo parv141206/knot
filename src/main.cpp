@@ -10,69 +10,109 @@
 #include "../include/evaluate.hpp"
 #include "../include/plot.hpp"
 
-tokens::Tokens tokenize(const std::string &line, int line_no);
-std::vector<std::string> read_knot_file(const std::string &path);
+tokens::Tokens tokenize(const std::string& line, int line_no);
+std::vector<std::string> read_knot_file(const std::string& path);
 
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
-    if (argc < 2)
-    {
-        print_error("File path not mentioned!");
-        print_info("Usage: ./knotc <path/to/file.knot>");
-        return 1;
-    }
+	print_branding();
+	if (argc < 2)
+	{
+		print_error("File path not mentioned!");
+		print_info("Usage: ./knotc <path/to/file.knot>");
+		return 1;
+	}
 
-    std::string file_path = argv[1];
-    std::cout << codes::green << codes::arrow << "Reading file: " << file_path << "\n"
-              << codes::reset;
-    std::vector<std::string> lines = read_knot_file(file_path);
+	std::string file_path = argv[1];
+	std::cout << codes::green << codes::arrow << "Reading file: " << file_path << codes::new_line
+		<< codes::reset;
 
-    for (size_t i = 0; i < lines.size(); ++i)
-    {
-        const auto &line = lines[i];
-        int line_no = static_cast<int>(i + 1);
+	double step = 0.1;
+	double end_bound = 10.0;
 
-        std::cout << codes::yellow << "Processing line " << line_no << ": \"" << line << "\"" << codes::reset << "\n";
+	for (int i = 2; i < argc; ++i) {
+		std::string arg = argv[i];
 
-        tokens::Tokens line_tokens = tokenize(line, line_no);
+		if (arg == "--step") {
+			if (i + 1 < argc) {
+				try {
+					step = string_to_double(argv[++i]);
+				}
+				catch (const std::runtime_error& e) {
+					print_error("Wrong --step");
+					print_error(e.what());
+				}
+			}
+			else {
+				print_error("Missing value for --step");
+				return 1;
+			}
+		}
+		else if (arg == "--end-bound") {
+			if (i + 1 < argc) {
+				try {
+					end_bound = string_to_double(argv[++i]);
+				}
+				catch (const std::runtime_error& e) {
+					print_error("Wrong --end-bound");
+					print_error(e.what());
+					return 1;
+				}
+			}
+			else {
+				print_error("Missing value for --end-bound");
+				return 1;
+			}
+		}
+		else {
+			print_error("Unknown option: " + arg);
+			return 1;
+		}
+	}
 
-        Parser parser(line_tokens);
+	std::vector<std::string> lines = read_knot_file(file_path);
 
-        std::vector<tokens::Token> postfix_expression = parser.parse();
+	std::cout << codes::new_line;
 
-        if (!postfix_expression.empty())
-        {
-            //std::cout << codes::green << "Syntax: VALID" << codes::reset << "\n";
-            //std::cout << codes::cyan << "Postfix Expression: " << codes::reset;
-            for (const auto &token : postfix_expression)
-            {
-                //std::cout << token << " ";
-                // following is temp, i will remove it. in future syntax, ill keep it so that user can mention values of a to z (apart from x and y) too ,
-    // but for now i am throwing an error for it.
-                if (token.type == tokens::TokenType::Ident) {
-                    if (token.lexeme != "x" && token.lexeme != "y") {
-                        throw std::runtime_error("Only supporting 'y' and 'x' based equations right now! A more dynamic version coming soon!");
-                        exit(0);
-                    }
-                }
-            }
-            std::cout << "\n";
+	std::vector<std::pair<std::map<double, double>, std::string>> all_plots;
 
-            std::map<double, double> values = evaluate(postfix_expression , 0.1 , 10.0);
-            /*for (auto pair : values) {
-                std::cout << "\n" << pair.first << " " << pair.second;
-            }*/
-            plot_values(values, "");
-        }
-        else
-        {
-            std::cout << codes::red << "Syntax: INVALID" << codes::reset << "\n";
-            exit(0);
-        }
+	for (size_t i = 0; i < lines.size(); ++i)
+	{
+		const auto& line = lines[i];
+		int line_no = static_cast<int>(i + 1);
 
-        std::cout << "\n";
-    }
+		std::cout << codes::yellow << "\t➤  " << line_no << " | " << line << "" << codes::reset << "\n";
 
-    std::cout << std::flush;
-    return 0;
+		tokens::Tokens line_tokens = tokenize(line, line_no);
+
+		Parser parser(line_tokens);
+
+		std::vector<tokens::Token> postfix_expression = parser.parse();
+
+		if (!postfix_expression.empty())
+		{
+			for (const auto& token : postfix_expression)
+			{
+				// following is temp, i will remove it. in future syntax, ill keep it so that user can mention values of a to z (apart from x and y) too ,
+	// but for now i am throwing an error for it.
+				if (token.type == tokens::TokenType::Ident) {
+					if (token.lexeme != "x" && token.lexeme != "y") {
+						throw std::runtime_error("Only supporting 'y' and 'x' based equations right now! A more dynamic version coming soon!");
+						exit(0);
+					}
+				}
+			}
+
+			std::map<double, double> values = evaluate(postfix_expression, step, end_bound);
+		
+			all_plots.push_back({ values, "f" + std::to_string(i + 1) });
+		}
+		else
+		{
+			exit(0);
+		}
+	} 
+	std::cout << "\n" << std::flush;
+	plot_values(all_plots);
+	return 0;
 }
