@@ -1,1 +1,2 @@
-plot y = x ^ 2
+plot y = tan(x)
+plot y = sin(x)

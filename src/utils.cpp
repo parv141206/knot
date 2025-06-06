@@ -66,3 +66,28 @@ void print_branding()
     std::cout << codes::new_line;
     std::cout << codes::new_line;
 }
+
+void print_help()
+{
+    std::cout << codes::new_line;
+    std::cout << codes::green << "┏━" << codes::reset;
+    std::cout << codes::green << "\n┃ Welcome to Knot – your lightweight graph plotter!";
+    std::cout << codes::green << "\n┃ Thanks for checking it out.";
+    std::cout << codes::green << "\n┃";
+    std::cout << codes::green << "\n┃ 📄 Basic Usage:";
+    std::cout << codes::green << "\n┃  1. Create a `.knot` file, e.g. `main.knot`.";
+    std::cout << codes::green << "\n┃  2. Write equations in the form `plot y = expression`.";
+    std::cout << codes::green << "\n┃  3. All equations will be plotted on the same graph.";
+    std::cout << codes::green << "\n┃  4. Currently, only `x` and `y` are supported (i.e., y = f(x)).";
+    std::cout << codes::green << "\n┃  5. Run it using: `./knotc main.knot`.";
+    std::cout << codes::green << "\n┃";
+    std::cout << codes::green << "\n┃ ⚙️  Options:";
+    std::cout << codes::green << "\n┃  --step       Set the increment in x. Default: 0.1";
+    std::cout << codes::green << "\n┃  --end-bound  Set the max absolute value of x. Default: 10.0";
+    std::cout << codes::green << "\n┃";
+    std::cout << codes::green << "\n┃ 📚 Docs & source: github.com/parv141206/knot";
+    std::cout << codes::green << "\n┗━" << codes::reset;
+    std::cout << codes::new_line;
+    std::cout << codes::new_line;
+
+}

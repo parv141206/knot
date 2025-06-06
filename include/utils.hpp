@@ -38,3 +38,7 @@ void exit_with_error();
  * @brief Prints title
  */
 void print_branding();
+/**
+ * @brief Prints the help page for the app
+ */
+void print_help();

@@ -16,19 +16,28 @@ std::vector<std::string> read_knot_file(const std::string& path);
 int main(int argc, char** argv)
 {
 	print_branding();
-	if (argc < 2)
-	{
-		print_error("File path not mentioned!");
-		print_info("Usage: ./knotc <path/to/file.knot>");
-		return 1;
-	}
-
-	std::string file_path = argv[1];
-	std::cout << codes::green << codes::arrow << "Reading file: " << file_path << codes::new_line
-		<< codes::reset;
 
 	double step = 0.1;
 	double end_bound = 10.0;
+	std::string file_path;
+
+	for (int i = 1; i < argc; ++i) {
+		std::string arg = argv[i];
+		if (arg == "--help") {
+			print_help();
+			return 0;
+		}
+	}
+
+	if (argc < 2) {
+		print_error("File path not mentioned!");
+		print_info("Usage: ./knotc <path/to/file.knot> [--step <value>] [--end-bound <value>]");
+		print_info("Use --help for more info.");
+		return 1;
+	}
+
+	file_path = argv[1];
+	std::cout << codes::green << codes::arrow << "Reading file: " << file_path << codes::new_line << codes::reset;
 
 	for (int i = 2; i < argc; ++i) {
 		std::string arg = argv[i];
@@ -39,8 +48,9 @@ int main(int argc, char** argv)
 					step = string_to_double(argv[++i]);
 				}
 				catch (const std::runtime_error& e) {
-					print_error("Wrong --step");
+					print_error("Invalid --step value");
 					print_error(e.what());
+					return 1;
 				}
 			}
 			else {
@@ -54,7 +64,7 @@ int main(int argc, char** argv)
 					end_bound = string_to_double(argv[++i]);
 				}
 				catch (const std::runtime_error& e) {
-					print_error("Wrong --end-bound");
+					print_error("Invalid --end-bound value");
 					print_error(e.what());
 					return 1;
 				}
@@ -66,15 +76,16 @@ int main(int argc, char** argv)
 		}
 		else {
 			print_error("Unknown option: " + arg);
+			print_info("Use --help to see available options.");
 			return 1;
 		}
 	}
 
 	std::vector<std::string> lines = read_knot_file(file_path);
-
 	std::cout << codes::new_line;
 
 	std::vector<std::pair<std::map<double, double>, std::string>> all_plots;
+
 
 	for (size_t i = 0; i < lines.size(); ++i)
 	{
@@ -104,14 +115,14 @@ int main(int argc, char** argv)
 			}
 
 			std::map<double, double> values = evaluate(postfix_expression, step, end_bound);
-		
+
 			all_plots.push_back({ values, "f" + std::to_string(i + 1) });
 		}
 		else
 		{
 			exit(0);
 		}
-	} 
+	}
 	std::cout << "\n" << std::flush;
 	plot_values(all_plots);
 	return 0;
