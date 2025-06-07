@@ -170,7 +170,20 @@ void Parser::parse_factor()
 void Parser::parse_primary()
 {
     const auto& token = peek(); 
+    // Following should be temp, basically for -x or something like that.
+    // I'll stick with this until and find something better :/
+    if (match({ tokens::TokenType::Minus }))
+    {
+        const auto& minus_token = consume();
 
+        postfix_output.push_back({ tokens::TokenType::Number, "0", minus_token.line });
+
+        parse_primary();
+
+        postfix_output.push_back(minus_token);
+
+        return;
+    }
     if (match({ tokens::TokenType::Number, tokens::TokenType::Ident }))
     {
         postfix_output.push_back(token); 

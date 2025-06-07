@@ -8,11 +8,8 @@
   "ExpandedNodes": [
     "",
     "\\include",
-    "\\include\\external",
-    "\\include\\external\\matplotplusplus",
-    "\\src",
-    "\\test"
+    "\\out"
   ],
-  "SelectedNode": "\\test\\beauty.knot",
+  "SelectedNode": "\\README.md",
   "PreviewInSolutionExplorer": false
 }

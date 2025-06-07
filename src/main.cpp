@@ -10,9 +10,6 @@
 #include "../include/evaluate.hpp"
 #include "../include/plot.hpp"
 
-tokens::Tokens tokenize(const std::string& line, int line_no);
-std::vector<std::string> read_knot_file(const std::string& path);
-
 int main(int argc, char** argv)
 {
 	print_branding();
@@ -110,12 +107,14 @@ int main(int argc, char** argv)
 					if (token.lexeme != "x" && token.lexeme != "y") {
 						throw std::runtime_error("Only supporting 'y' and 'x' based equations right now! A more dynamic version coming soon!");
 						exit(0);
-					}
+					} 
 				}
 			}
 
 			std::map<double, double> values = evaluate(postfix_expression, step, end_bound);
-
+	/*		for (auto pair : values) {
+				std::cout << std::endl << pair.first << " " << pair.second << std::endl;
+			}*/
 			all_plots.push_back({ values, "f" + std::to_string(i + 1) });
 		}
 		else
